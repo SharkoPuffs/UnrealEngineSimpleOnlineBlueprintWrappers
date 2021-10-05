@@ -1,0 +1,1 @@
+These are a few simple wrappers for Unreal Engine's Online Subsystem Module to allow their use in Blueprints.
