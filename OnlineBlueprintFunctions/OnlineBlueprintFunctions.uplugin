@@ -1,0 +1,34 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "OnlineBlueprintFunctions",
+	"Description": "Some Simple Wrappers for the online subsytem module to allow them to be used in blueprints.",
+	"Category": "Online",
+	"CreatedBy": "SharkoPuffs",
+	"CreatedByURL": "github.com/SharkoPuffs/UnrealEngineSimpleOnlineBlueprintWrappers",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "OnlineBlueprintFunctions",
+			"Type": "Runtime",
+			"LoadingPhase": "PreLoadingScreen"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "OnlineSubsystem",
+			"Enabled": true
+		},
+		{
+			"Name": "OnlineSubsystemUtils",
+			"Enabled": true
+		}
+	]
+}

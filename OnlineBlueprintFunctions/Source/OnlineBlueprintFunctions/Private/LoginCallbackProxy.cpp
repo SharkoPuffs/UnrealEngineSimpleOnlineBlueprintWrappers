@@ -1,0 +1,73 @@
+//
+
+#include "LoginCallbackProxy.h"
+#include "EngineGlobals.h"
+#include "Engine/Engine.h"
+#include "OnlineSubsystem.h"
+#include "OnlineSubsystemTypes.h"
+#include "GameFramework/PlayerController.h"
+
+/////////////////////////////////////////////////////////////
+// ULoginCallbackProxy
+
+ULoginCallbackProxy::ULoginCallbackProxy(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+	, LoginCompleteDelegate(FOnLoginCompleteDelegate::CreateUObject(this, &ThisClass::OnLoginComplete))
+	, Type("accountportal")
+{
+}
+
+ULoginCallbackProxy* ULoginCallbackProxy::Login(UObject* WorldContextObject, class APlayerController* PlayerController, FString UserName, FString Password, FString Type, int32 PlayerNum)
+{
+	ULoginCallbackProxy* Proxy = NewObject<ULoginCallbackProxy>();
+	Proxy->PlayerControllerWeakPtr = PlayerController;
+	Proxy->UserName = UserName;
+	Proxy->Password = Password;
+	Proxy->Type = Type;
+	Proxy->PlayerNum = PlayerNum;
+	Proxy->WorldContextObject = WorldContextObject;
+	return Proxy;
+}
+
+void ULoginCallbackProxy::Activate()
+{
+	auto Helper = IOnlineSubsystem::Get();
+
+	auto Identity = Helper->GetIdentityInterface();
+	if (Identity.IsValid())
+	{
+		LoginCompleteDelegateHandle = Identity->AddOnLoginCompleteDelegate_Handle(0, LoginCompleteDelegate);
+		FOnlineAccountCredentials AccountCredentials;
+		AccountCredentials.Id = UserName;
+		AccountCredentials.Token = Password;
+		AccountCredentials.Type = Type;
+
+		Identity->Login(PlayerNum, AccountCredentials);
+
+		// OnLoginComplete will get called when complete
+	}
+	else
+	{
+		FFrame::KismetExecutionMessage(TEXT("Identity not supported by Online Subsystem"), ELogVerbosity::Warning);
+	}
+}
+
+void ULoginCallbackProxy::OnLoginComplete(int32 LocalUserNum, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& ErrString)
+{
+	auto Helper = IOnlineSubsystem::Get();
+
+	auto Identity = Helper->GetIdentityInterface();
+	if (Identity.IsValid())
+	{
+		Identity->ClearOnLoginCompleteDelegate_Handle(0, LoginCompleteDelegateHandle);
+	}
+
+	if (bWasSuccessful)
+	{
+		OnSuccess.Broadcast();
+	}
+	else
+	{
+		OnFailure.Broadcast();
+	}
+}
