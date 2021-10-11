@@ -1,3 +1,5 @@
+// Copyright 2021 SharkoPuffs. All Rights Reserved.
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,50 +9,44 @@
 #include "OnlineBlueprintFunctionsTypes.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSubsystemTypes.h"
-#include "GameFramework/OnlineReplStructs.h"
-#include "GameFramework/PlayerState.h"
-#include "LoginCallbackProxy.generated.h"
+#include "LogoutUserNumberCallbackProxy.generated.h"
 
 class APlayerController;
 
 UCLASS()
-class ONLINEBLUEPRINTFUNCTIONS_API ULoginCallbackProxy : public UOnlineBlueprintCallProxyBase
+class ONLINEBLUEPRINTFUNCTIONS_API ULogoutUserNumberCallbackProxy : public UOnlineBlueprintCallProxyBase
 {
 	GENERATED_UCLASS_BODY()
 
-	// Called when Logged in successfully
+	// Called when Logged out successfully
 	UPROPERTY(BlueprintAssignable)
-	FBlueprintLoginCompleteDelegate OnSuccess;
+	FEmptyOnlineDelegate OnSuccess;
 
-	// Called when Login attempt fails
+	// Called when Logout attempt fails
 	UPROPERTY(BlueprintAssignable)
-	FBlueprintLoginCompleteDelegate OnFailure;
+	FEmptyOnlineDelegate OnFailure;
 
-	// Attempt to Login to the default Online Subsystem
+	// Attempt to Logout of the default Online Subsystem
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject"), Category = "Online|Identity")
-	static ULoginCallbackProxy* Login(UObject* WorldContextObject, class APlayerController* PlayerController, FString UserName, FString Password, FString Type, int32 PlayerNum);
+	static ULogoutUserNumberCallbackProxy* LogoutUserNumber(UObject* WorldContextObject, class APlayerController* PlayerController, int32 PlayerNum);
 
 	// UOnlineBlueprintCallProxyBase interface
 	virtual void Activate() override;
 	// End of UOnlineBlueprintCallProxyBase interface
 
 private:
-	// Internal callback when login attempt completes, calls OnSuccess or OnFailure
-	void OnLoginComplete(int32 LocalUserNum, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& ErrString);
+	// Internal callback when logout attempt completes, calls OnSuccess or OnFailure
+	void OnLogoutComplete(int32 LocalUserNum, bool bWasSuccessful);
 
 	// The player controller triggering things
 	TWeakObjectPtr<APlayerController> PlayerControllerWeakPtr;
 
 	// The delegate executed by the Online Subsystem
-	FOnLoginCompleteDelegate LoginCompleteDelegate;
+	FOnLogoutCompleteDelegate Delegate;
 
 	// Handle to the registered delegate
-	FDelegateHandle LoginCompleteDelegateHandle;
+	FDelegateHandle DelegateHandle;
 
-	// Login details
-	FString UserName;
-	FString Password;
-	FString Type;
 	int32 PlayerNum;
 
 	// The world context object in which this call is taking place

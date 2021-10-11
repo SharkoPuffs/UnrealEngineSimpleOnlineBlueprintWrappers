@@ -19,6 +19,7 @@ public class OnlineBlueprintFunctions : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
+				"CoreOnline",
 				"CoreUObject",
 				"Engine",
 				"OnlineSubsystem",

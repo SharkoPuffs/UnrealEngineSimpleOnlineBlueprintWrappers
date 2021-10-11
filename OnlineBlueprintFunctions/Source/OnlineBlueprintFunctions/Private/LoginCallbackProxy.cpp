@@ -1,11 +1,6 @@
 //
 
 #include "LoginCallbackProxy.h"
-#include "EngineGlobals.h"
-#include "Engine/Engine.h"
-#include "OnlineSubsystem.h"
-#include "OnlineSubsystemTypes.h"
-#include "GameFramework/PlayerController.h"
 
 /////////////////////////////////////////////////////////////
 // ULoginCallbackProxy
@@ -33,41 +28,56 @@ void ULoginCallbackProxy::Activate()
 {
 	auto Helper = IOnlineSubsystem::Get();
 
-	auto Identity = Helper->GetIdentityInterface();
-	if (Identity.IsValid())
+	if (Helper)
 	{
-		LoginCompleteDelegateHandle = Identity->AddOnLoginCompleteDelegate_Handle(0, LoginCompleteDelegate);
-		FOnlineAccountCredentials AccountCredentials;
-		AccountCredentials.Id = UserName;
-		AccountCredentials.Token = Password;
-		AccountCredentials.Type = Type;
+		auto Identity = Helper->GetIdentityInterface();
+		if (Identity.IsValid())
+		{
+			LoginCompleteDelegateHandle = Identity->AddOnLoginCompleteDelegate_Handle(0, LoginCompleteDelegate);
+			FOnlineAccountCredentials AccountCredentials;
+			AccountCredentials.Id = UserName;
+			AccountCredentials.Token = Password;
+			AccountCredentials.Type = Type;
 
-		Identity->Login(PlayerNum, AccountCredentials);
+			Identity->Login(PlayerNum, AccountCredentials);
 
-		// OnLoginComplete will get called when complete
+			// OnLoginComplete will get called when complete
+			return;
+		}
+		else
+		{
+			FFrame::KismetExecutionMessage(TEXT("Identity not supported by Online Subsystem"), ELogVerbosity::Warning);
+		}
 	}
-	else
-	{
-		FFrame::KismetExecutionMessage(TEXT("Identity not supported by Online Subsystem"), ELogVerbosity::Warning);
-	}
+	FUniqueNetIdRepl UId = FUniqueNetIdRepl();
+	OnFailure.Broadcast(0, false, UId, "Login Failed");
 }
 
 void ULoginCallbackProxy::OnLoginComplete(int32 LocalUserNum, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& ErrString)
 {
+	FUniqueNetIdRepl UId;
 	auto Helper = IOnlineSubsystem::Get();
-
-	auto Identity = Helper->GetIdentityInterface();
-	if (Identity.IsValid())
+	if (Helper)
 	{
-		Identity->ClearOnLoginCompleteDelegate_Handle(0, LoginCompleteDelegateHandle);
+		auto Identity = Helper->GetIdentityInterface();
+		if (Identity.IsValid())
+		{
+			Identity->ClearOnLoginCompleteDelegate_Handle(0, LoginCompleteDelegateHandle);
+		}
+		if (bWasSuccessful && PlayerControllerWeakPtr.IsValid())
+		{
+			UId = PlayerControllerWeakPtr->PlayerState->GetUniqueId();
+			UId.SetUniqueNetId(FUniqueNetIdWrapper(UserId).GetUniqueNetId());
+			PlayerControllerWeakPtr->PlayerState->SetUniqueId(UId);
+			OnSuccess.Broadcast(LocalUserNum, bWasSuccessful, UId, ErrString);
+		}
+		else
+		{
+			UId = FUniqueNetIdRepl();
+			OnFailure.Broadcast(LocalUserNum, bWasSuccessful, UId, ErrString);
+		}
+		return;
 	}
-
-	if (bWasSuccessful)
-	{
-		OnSuccess.Broadcast();
-	}
-	else
-	{
-		OnFailure.Broadcast();
-	}
+	UId = FUniqueNetIdRepl();
+	OnFailure.Broadcast(LocalUserNum, bWasSuccessful, UId, ErrString);
 }
