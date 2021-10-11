@@ -1,4 +1,5 @@
 // Copyright 2021 SharkoPuffs. All Rights Reserved.
+
 #pragma once
 
 #include "CoreMinimal.h"

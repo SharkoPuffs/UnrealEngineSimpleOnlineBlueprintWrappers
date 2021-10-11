@@ -1,4 +1,4 @@
-//
+// Copyright 2021 SharkoPuffs. All Rights Reserved.
 
 #include "LoginCallbackProxy.h"
 
