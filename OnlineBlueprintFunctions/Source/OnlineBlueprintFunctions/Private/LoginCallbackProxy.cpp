@@ -66,10 +66,41 @@ void ULoginCallbackProxy::OnLoginComplete(int32 LocalUserNum, bool bWasSuccessfu
 		}
 		if (bWasSuccessful && PlayerControllerWeakPtr.IsValid())
 		{
-			UId = PlayerControllerWeakPtr->PlayerState->GetUniqueId();
-			UId.SetUniqueNetId(FUniqueNetIdWrapper(UserId).GetUniqueNetId());
-			PlayerControllerWeakPtr->PlayerState->SetUniqueId(UId);
-			OnSuccess.Broadcast(LocalUserNum, bWasSuccessful, UId, ErrString);
+			if (!UserId.IsValid())
+			{
+				if (GEngine)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Login returning invalid NetId"));
+				}
+			}
+			else
+			{
+				if (GEngine)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("NetId Valid"));
+				}
+			}
+			if (PlayerControllerWeakPtr.IsValid() && !PlayerControllerWeakPtr.IsStale())
+			{
+				APlayerController* PC = PlayerControllerWeakPtr.Get();
+				PC->PlayerState->SetUniqueId(UserId.AsShared());
+				if (PC->PlayerState->GetUniqueId().IsValid())
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Successfully set Player state UniqueId"));
+				}
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("PlayerControllerWeakPtr is Invalid or Stale."));
+				APlayerController* PC = PlayerControllerWeakPtr.Get();
+				PC->PlayerState->SetUniqueId(UserId.AsShared());
+				if (PC->PlayerState->GetUniqueId().IsValid())
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Successfully set Player state UniqueId"));
+				}
+			}
+			OnSuccess.Broadcast(LocalUserNum, bWasSuccessful, FUniqueNetIdRepl(FUniqueNetIdWrapper(UserId)), ErrString);
+			return;
 		}
 		else
 		{

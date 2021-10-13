@@ -26,7 +26,7 @@ class ONLINEBLUEPRINTFUNCTIONS_API UFindSessionsPlusCallbackProxy : public UOnli
 	FBlueprintFindSessionsResultDelegate OnFailure;
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject"), Category = "Online|Session")
-	static UFindSessionsPlusCallbackProxy* FindSessionsPlus(UObject* WorldContextObject, class APlayerController* PlayerController, int32 MaxResults, bool bUseLAN, FBlueprintSearchSettings SearchSettings);
+	static UFindSessionsPlusCallbackProxy* FindSessionsPlus(UObject* WorldContextObject, class APlayerController* PlayerController, FUniqueNetIdRepl NetId, int32 MaxResults, bool bUseLAN, FBlueprintSearchSettings SearchSettings);
 
 	// UOnlineBlueprintCallProxyBase interface
 	virtual void Activate() override;
@@ -57,6 +57,8 @@ private:
 
 	// The world context object in which this call is taking place
 	UObject* WorldContextObject;
+
+	FUniqueNetIdRepl NetId;
 
 	FBlueprintSearchSettings SearchSettings;
 };

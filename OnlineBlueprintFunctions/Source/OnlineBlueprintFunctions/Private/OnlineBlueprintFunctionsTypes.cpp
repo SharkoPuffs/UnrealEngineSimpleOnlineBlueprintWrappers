@@ -19,7 +19,6 @@ FBlueprintSessionSettings UOnlineBlueprintFunctionsTypes::BreakOnlineSessionSett
 	NewSettings.bUseStats = Settings.Settings.bUsesStats;
 	NewSettings.NumberOfPrivateConnections = Settings.Settings.NumPrivateConnections;
 	NewSettings.NumberOfPublicConnections = Settings.Settings.NumPublicConnections;
-	NewSettings.UniqueId = Settings.Settings.BuildUniqueId;
 	FString Keywords;
 	Settings.Settings.Get(SEARCH_KEYWORDS, Keywords);
 	NewSettings.SearchKeywords = Keywords;
@@ -37,10 +36,6 @@ FOnlineSessionSettingsHolder UOnlineBlueprintFunctionsTypes::MakeOnlineSessionSe
 	NewSettings.Settings.bIsDedicated = Settings.bIsDedicatedServer;
 	NewSettings.Settings.bIsLANMatch = Settings.bUseLAN;
 	NewSettings.Settings.bShouldAdvertise = Settings.bShouldAdvertiseSession;
-	if (Settings.UniqueId != 0)
-	{
-		NewSettings.Settings.BuildUniqueId = Settings.UniqueId;
-	}
 	NewSettings.Settings.bUseLobbiesIfAvailable = Settings.bUseLobbiesIfSupported;
 	NewSettings.Settings.bUseLobbiesVoiceChatIfAvailable = Settings.bUseLobbiesChatIfSupported;
 	NewSettings.Settings.bUsesPresence = Settings.bUsePresence;

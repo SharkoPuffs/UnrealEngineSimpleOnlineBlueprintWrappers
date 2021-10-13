@@ -9,7 +9,7 @@ UFindSessionsPlusCallbackProxy::UFindSessionsPlusCallbackProxy(const FObjectInit
 {
 }
 
-UFindSessionsPlusCallbackProxy* UFindSessionsPlusCallbackProxy::FindSessionsPlus(UObject* WorldContextObject, APlayerController* PlayerController, int32 MaxResults, bool bUseLAN, FBlueprintSearchSettings SearchSettings)
+UFindSessionsPlusCallbackProxy* UFindSessionsPlusCallbackProxy::FindSessionsPlus(UObject* WorldContextObject, APlayerController* PlayerController, FUniqueNetIdRepl NetId, int32 MaxResults, bool bUseLAN, FBlueprintSearchSettings SearchSettings)
 {
 	UFindSessionsPlusCallbackProxy* Proxy = NewObject< UFindSessionsPlusCallbackProxy>();
 	Proxy->WorldContextObject = WorldContextObject;
@@ -17,6 +17,7 @@ UFindSessionsPlusCallbackProxy* UFindSessionsPlusCallbackProxy::FindSessionsPlus
 	Proxy->MaxResults = MaxResults;
 	Proxy->bUseLAN = bUseLAN;
 	Proxy->SearchSettings = SearchSettings;
+	Proxy->NetId = NetId;
 	return Proxy;
 }
 
@@ -92,8 +93,7 @@ void UFindSessionsPlusCallbackProxy::Activate()
 			{
 				SearchObject->QuerySettings.Set(SEARCH_USER_ATTRIBUTE_TEAM, SearchSettings.SearchUserAttributeTeam, EOnlineComparisonOp::Equals);
 			}
-			TSharedPtr<const FUniqueNetId> UniqueNetId = PlayerControllerWeakPtr->GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
-			Sessions->FindSessions(*UniqueNetId, SearchObject.ToSharedRef());
+			Sessions->FindSessions(*NetId, SearchObject.ToSharedRef());
 
 			return;
 		}

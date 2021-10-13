@@ -10,6 +10,7 @@
 #include "OnlineSessionSettings.h"
 #include "OnlineBlueprintFunctionsTypes.h"
 #include "GameFramework/OnlineReplStructs.h"
+#include "GameFramework/PlayerState.h"
 #include "CreateSessionPlusCallbackProxy.generated.h"
 
 class APlayerController;
@@ -26,7 +27,7 @@ class ONLINEBLUEPRINTFUNCTIONS_API UCreateSessionPlusCallbackProxy : public UOnl
 	FEmptyOnlineDelegate OnFailure;
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject"), Category = "Online|Session")
-	static UCreateSessionPlusCallbackProxy* CreateSessionPlus(UObject* WorldContextObject, class APlayerController* PlayerController, ESessionNamesType SessionType, FBlueprintSessionSettings Settings);
+	static UCreateSessionPlusCallbackProxy* CreateSessionPlus(UObject* WorldContextObject, class APlayerController* PlayerController, FUniqueNetIdRepl NetId, ESessionNamesType SessionType, FBlueprintSessionSettings Settings);
 
 	// UOnlineBlueprintCallProxyBase interface
 	virtual void Activate() override;
@@ -41,6 +42,7 @@ private:
 	FDelegateHandle DelegateHandle;
 
 	TWeakObjectPtr<APlayerController> PlayerControllerWeakPtr;
+	FUniqueNetIdRepl NetId;
 	ESessionNamesType SessionType;
 	FBlueprintSessionSettings Settings;
 	UObject* WorldContextObject;

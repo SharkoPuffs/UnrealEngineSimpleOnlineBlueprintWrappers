@@ -76,9 +76,6 @@ public:
 		bool bUseLobbiesChatIfSupported;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Online|Session")
-		int32 UniqueId;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Online|Session")
 		FString SearchKeywords;
 
 	FBlueprintSessionSettings()
@@ -97,8 +94,47 @@ public:
 		bAntiCheat = false;
 		bUseLobbiesIfSupported = false;
 		bUseLobbiesChatIfSupported = false;
-		UniqueId = 0;
 		SearchKeywords = "";
+	}
+	FBlueprintSessionSettings(FOnlineSessionSettings& SettingsIn)
+	{
+		NumberOfPublicConnections = SettingsIn.NumPublicConnections;
+		NumberOfPrivateConnections = SettingsIn.NumPrivateConnections;
+		bShouldAdvertiseSession = SettingsIn.bShouldAdvertise;
+		bAllowJoinGameInProgress = SettingsIn.bAllowJoinInProgress;
+		bUseLAN = SettingsIn.bIsLANMatch;
+		bIsDedicatedServer = SettingsIn.bIsDedicated;
+		bUseStats = SettingsIn.bUsesStats;
+		bEnableInvites = SettingsIn.bAllowInvites;
+		bUsePresence = SettingsIn.bUsesPresence;
+		bAllowJoinUsingPresence = SettingsIn.bAllowJoinViaPresence;
+		bAllowJoinUsingPresenceFriendsOnly = SettingsIn.bAllowJoinViaPresenceFriendsOnly;
+		bAntiCheat = SettingsIn.bAntiCheatProtected;
+		bUseLobbiesIfSupported = SettingsIn.bUseLobbiesIfAvailable;
+		bUseLobbiesChatIfSupported = SettingsIn.bUseLobbiesVoiceChatIfAvailable;
+		FString Keyword;
+		SettingsIn.Get(SEARCH_KEYWORDS, Keyword);
+		SearchKeywords = Keyword;
+	}
+	FOnlineSessionSettings GetSettings()
+	{
+		FOnlineSessionSettings NewSettings = FOnlineSessionSettings();
+		NewSettings.NumPublicConnections = NumberOfPublicConnections;
+		NewSettings.NumPrivateConnections = NumberOfPrivateConnections;
+		NewSettings.bAllowInvites = bEnableInvites;
+		NewSettings.bAllowJoinInProgress = bAllowJoinGameInProgress;
+		NewSettings.bAllowJoinViaPresence = bAllowJoinUsingPresence;
+		NewSettings.bAllowJoinViaPresenceFriendsOnly = bAllowJoinUsingPresenceFriendsOnly;
+		NewSettings.bAntiCheatProtected = bAntiCheat;
+		NewSettings.bIsDedicated = bIsDedicatedServer;
+		NewSettings.bIsLANMatch = bUseLAN;
+		NewSettings.bShouldAdvertise = bShouldAdvertiseSession;
+		NewSettings.bUseLobbiesIfAvailable = bUseLobbiesIfSupported;
+		NewSettings.bUseLobbiesVoiceChatIfAvailable = bUseLobbiesChatIfSupported;
+		NewSettings.bUsesPresence = bUsePresence;
+		NewSettings.bUsesStats = bUseStats;
+		NewSettings.Set(SEARCH_KEYWORDS, SearchKeywords);
+		return NewSettings;
 	}
 };
 

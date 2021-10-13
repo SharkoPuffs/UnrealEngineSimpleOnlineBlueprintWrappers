@@ -9,13 +9,14 @@ UJoinSessionPlusCallbackProxy::UJoinSessionPlusCallbackProxy(const FObjectInitia
 {
 }
 
-UJoinSessionPlusCallbackProxy* UJoinSessionPlusCallbackProxy::JoinSessionPlus(UObject* WorldContextObject, APlayerController* PlayerController, ESessionNamesType SessionType, const FBlueprintSessionResult& SearchResult)
+UJoinSessionPlusCallbackProxy* UJoinSessionPlusCallbackProxy::JoinSessionPlus(UObject* WorldContextObject, APlayerController* PlayerController, FUniqueNetIdRepl NetId, ESessionNamesType SessionType, const FBlueprintSessionResult& SearchResult)
 {
 	UJoinSessionPlusCallbackProxy* Proxy = NewObject<UJoinSessionPlusCallbackProxy>();
 	Proxy->PlayerControllerWeakPtr = PlayerController;
 	Proxy->OnlineSearchResult = SearchResult.OnlineResult;
 	Proxy->WorldContextObject = WorldContextObject;
 	Proxy->SessionType = SessionType;
+	Proxy->NetId = NetId;
 	return Proxy;
 }
 
@@ -28,8 +29,7 @@ void UJoinSessionPlusCallbackProxy::Activate()
 		if (Sessions.IsValid())
 		{
 			DelegateHandle = Sessions->AddOnJoinSessionCompleteDelegate_Handle(Delegate);
-			TSharedPtr<const FUniqueNetId> UniqueNetIdPtr = PlayerControllerWeakPtr->GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
-			Sessions->JoinSession(*UniqueNetIdPtr, ESessionNamesTypeToFName(SessionType), OnlineSearchResult);
+			Sessions->JoinSession(*NetId, ESessionNamesTypeToFName(SessionType), OnlineSearchResult);
 			return;
 		}
 		else
@@ -52,7 +52,7 @@ void UJoinSessionPlusCallbackProxy::OnCompleted(FName SessionName, EOnJoinSessio
 			if (Result == EOnJoinSessionCompleteResult::Type::Success)
 			{
 				FString ConnectString;
-				if (Sessions->GetResolvedConnectString(SessionName, ConnectString))
+				if (Sessions->GetResolvedConnectString(OnlineSearchResult, GamePort, ConnectString))
 				{
 					if (PlayerControllerWeakPtr.IsValid())
 					{

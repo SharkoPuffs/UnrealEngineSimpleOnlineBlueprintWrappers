@@ -28,7 +28,7 @@ class ONLINEBLUEPRINTFUNCTIONS_API UJoinSessionPlusCallbackProxy : public UOnlin
 	FEmptyOnlineDelegate OnFailure;
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject"), Category = "Online|Session")
-	static UJoinSessionPlusCallbackProxy* JoinSessionPlus(UObject* WorldContextObject, class APlayerController* PlayerController, ESessionNamesType SessionType, const FBlueprintSessionResult& SearchResult);
+	static UJoinSessionPlusCallbackProxy* JoinSessionPlus(UObject* WorldContextObject, class APlayerController* PlayerController, FUniqueNetIdRepl NetId, ESessionNamesType SessionType, const FBlueprintSessionResult& SearchResult);
 
 	// UOnlineBlueprintCallProxyBase interface
 	virtual void Activate() override;
@@ -52,6 +52,8 @@ private:
 
 	// The world context object in which this call is taking place
 	UObject* WorldContextObject;
+
+	FUniqueNetIdRepl NetId;
 
 	ESessionNamesType SessionType;
 };

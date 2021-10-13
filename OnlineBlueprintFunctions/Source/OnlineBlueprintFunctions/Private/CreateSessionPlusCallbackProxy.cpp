@@ -10,40 +10,42 @@ UCreateSessionPlusCallbackProxy::UCreateSessionPlusCallbackProxy(const FObjectIn
 {
 }
 
-UCreateSessionPlusCallbackProxy* UCreateSessionPlusCallbackProxy::CreateSessionPlus(UObject* WorldContextObject, APlayerController* PlayerController, ESessionNamesType SessionType, FBlueprintSessionSettings Settings)
+UCreateSessionPlusCallbackProxy* UCreateSessionPlusCallbackProxy::CreateSessionPlus(UObject* WorldContextObject, APlayerController* PlayerController, FUniqueNetIdRepl NetId, ESessionNamesType SessionType, FBlueprintSessionSettings Settings)
 {
 	UCreateSessionPlusCallbackProxy* Proxy = NewObject<UCreateSessionPlusCallbackProxy>();
 	Proxy->WorldContextObject = WorldContextObject;
 	Proxy->PlayerControllerWeakPtr = PlayerController;
 	Proxy->SessionType = SessionType;
 	Proxy->Settings = Settings;
+	Proxy->NetId = NetId;
 	return Proxy;
 }
 
 void UCreateSessionPlusCallbackProxy::Activate()
 {
-	if (PlayerControllerWeakPtr.IsValid())
+	auto Helper = IOnlineSubsystem::Get();
+	if (Helper)
 	{
-		auto Helper = IOnlineSubsystem::Get();
-		if (Helper)
+		auto SessionInterface = Helper->GetSessionInterface();
+		if (SessionInterface.IsValid())
 		{
-			auto SessionInterface = Helper->GetSessionInterface();
-			if (SessionInterface.IsValid())
+			if (NetId.IsValid())
 			{
 				DelegateHandle = SessionInterface->AddOnCreateSessionCompleteDelegate_Handle(Delegate);
-				TSharedPtr<const FUniqueNetId> UniqueNetIdPtr = PlayerControllerWeakPtr->GetLocalPlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
-				SessionInterface->CreateSession(*UniqueNetIdPtr, ESessionNamesTypeToFName(SessionType), UOnlineBlueprintFunctionsTypes::MakeOnlineSessionSettings(Settings).Settings);
+				FOnlineSessionSettings NewSettings = Settings.GetSettings();
+				SessionInterface->CreateSession(*NetId, ESessionNamesTypeToFName(SessionType), NewSettings);
 				return;
 			}
 			else
 			{
-				FFrame::KismetExecutionMessage(TEXT("Online Subsystem does not support Sessions"), ELogVerbosity::Warning);
+				FFrame::KismetExecutionMessage(TEXT("Unique Id is Invalid"), ELogVerbosity::Warning);
 			}
 		}
-		OnFailure.Broadcast();
-		return;
+		else
+		{
+			FFrame::KismetExecutionMessage(TEXT("Online Subsystem does not support Sessions"), ELogVerbosity::Warning);
+		}
 	}
-	UE_LOG_ONLINE_SESSION(Warning, TEXT("PlayerController is invalid!"))
 	OnFailure.Broadcast();
 }
 
